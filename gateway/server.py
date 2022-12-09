@@ -23,19 +23,31 @@ app = Flask(__name__)
 
 
 def auth_service_validate_token(request):
+    """Token validation in auth service
+
+    Args:
+        request (request): Flask request
+
+    Returns:
+        tuple: First item of the tuple will be the decoded token if the request is successfull and 2nd item will be the status code
+    """
     if not "Authorization" in request.headers:
+        # if there is no "Authorization" header in the request that is coming to "gateway" service, return error
         return None, ("missing credentials", 401)
 
     token = request.headers["Authorization"]
 
     if not token:
+        # if there is no JWT token return error
         return None, ("missing credentials", 401)
 
+    # post request to auth service to validate the token
     response = httpx.post(
         f"{AUTH_SERVICE_URL}/validate",
         headers={"Authorization": token},
     )
 
+    # auth service returns us the token and status code
     if response.status_code == 200:
         return response.text, None
     else:
@@ -43,12 +55,22 @@ def auth_service_validate_token(request):
 
 
 def auth_service_login(request):
+    """Auth request to auth service
+
+    Args:
+        request (request): Flask request
+
+    Returns:
+        tuple: First item of the tuple will be the token if the request is successfull and 2nd item will be the status code
+    """
     auth = request.authorization
     if not auth:
+        #  if there is no "Authorization" header in the request that is coming to "gateway" service, return error
         return None, ("missing credentials", 401)
 
     basicAuth = (auth.username, auth.password)
 
+    # post request to auth service to get the token
     response = httpx.post(f"{AUTH_SERVICE_URL}/login", auth=basicAuth)
 
     if response.status_code == 200:
@@ -59,6 +81,7 @@ def auth_service_login(request):
 
 @app.route("/login", methods=["POST"])
 def login():
+    # get the token by using gateway service (we can think that the request will be redirected to the auth service)
     token, err = auth_service_login(request)
     if not err:
         return token
@@ -68,12 +91,18 @@ def login():
 
 @app.route("/posts", methods=["POST"])
 def post_posts():
-    POSTS_DB.append(request.json)
-    return {"msg": "success", "data": request.json}
+    # firstly validate the token by using gateway service. By doing that we enforce to make the user to be logged in
+    token, err = auth_service_validate_token(request)
+    if err:
+        return err
+    else:
+        POSTS_DB.append(request.json)
+        return {"msg": "success", "data": request.json}
 
 
 @app.route("/posts", methods=["GET"])
 def get_posts():
+    # firstly validate the token by using gateway service. By doing that we enforce to make the user to be logged in
     token, err = auth_service_validate_token(request)
     if err:
         return err
