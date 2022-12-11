@@ -35,7 +35,7 @@ def auth_service_validate_token(request):
         # if there is no "Authorization" header in the request that is coming to "gateway" service, return error
         return None, ("missing credentials", 401)
 
-    token = request.headers["Authorization"]
+    token = request.headers["Authorization"] # token has to use the Bearer scheme!
 
     if not token:
         # if there is no JWT token return error
