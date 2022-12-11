@@ -1,0 +1,4 @@
+flask
+httpx
+black
+pyjwt
