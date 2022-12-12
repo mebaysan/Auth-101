@@ -27,10 +27,14 @@
 from flask import Flask, request
 import jwt
 import datetime
+import os
 
 JWT_SECRET = (
-    "this-is-so-secret-key-to-encode-jwt-tokens"  # you should get this by using ENV
-)
+    "this-is-so-secret-key-to-encode-jwt-tokens"
+    if os.environ.get("JWT_SECRET", None) is None
+    else os.environ.get("JWT_SECRET")
+)  # in container it will be set in ENV
+
 USERS_DB = [
     {"username": "user@user.com", "password": "Passw0rd", "is_admin": True}
 ]  # you should use a real db :)
@@ -94,4 +98,4 @@ def createJWT(username, secret, authz):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=os.environ.get("DEBUG"))

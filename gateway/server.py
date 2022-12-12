@@ -15,8 +15,14 @@
 from flask import Flask, request
 import httpx
 import json
+import os
 
-AUTH_SERVICE_URL = "http://127.0.0.1:5000"  # you should get this by using ENV
+AUTH_SERVICE_URL = (
+    "http://127.0.0.1:5000"
+    if os.environ.get("AUTH_SERVICE_URL", None) is None
+    else os.environ.get("AUTH_SERVICE_URL")
+)  # in container it will be set in ENV
+
 POSTS_DB = []  # to simulate inserting
 
 app = Flask(__name__)
@@ -35,7 +41,7 @@ def auth_service_validate_token(request):
         # if there is no "Authorization" header in the request that is coming to "gateway" service, return error
         return None, ("missing credentials", 401)
 
-    token = request.headers["Authorization"] # token has to use the Bearer scheme!
+    token = request.headers["Authorization"]  # token has to use the Bearer scheme!
 
     if not token:
         # if there is no JWT token return error
@@ -113,4 +119,4 @@ def get_posts():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=os.environ.get("DEBUG"))
