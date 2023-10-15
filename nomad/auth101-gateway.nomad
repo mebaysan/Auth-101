@@ -34,15 +34,15 @@ job "auth101-gateway" {
       }
 
 # We can use "range nomadService" to get the service address and port
- #     template {
-#        data        = <<EOH
-#{{ range nomadService "redis-svc" }}
-#AUTH_SERVICE_URL=http://{{ .Address }}:{{ .Port }}
-#{{ end }}
-#EOH
-        #destination = "local/env.txt"
-       # env         = true
-      #}
+//      template {
+//         data        = <<EOH
+// {{ range nomadService "auth101-auth-svc" }}
+// AUTH_SERVICE_URL=http://{{ .Address }}:{{ .Port }}
+// {{ end }}
+// EOH
+//         destination = "local/env.txt"
+//         env         = true
+//       }
 
     }
   }
